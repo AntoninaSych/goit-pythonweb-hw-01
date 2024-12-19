@@ -1,90 +1,84 @@
+import logging
 from abc import ABC, abstractmethod
+from typing import Union
 
-# Абстрактний базовий клас Transport (замість Vehicle для кращої семантики)
+# Налаштування логування - виводимо лише повідомлення без стандартних префіксів
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+logger = logging.getLogger(__name__)
+
+
+# Абстрактний базовий клас для транспортних засобів
 class Vehicle(ABC):
-    def __init__(self, make, model, spec):
+    def __init__(self, make: str, model: str, spec: str) -> None:
         self.make = make
         self.model = model
         self.spec = spec
 
     @abstractmethod
-    def start_engine(self):
+    def start_engine(self) -> None:
         pass
+
 
 # Реалізація класу Car
 class Car(Vehicle):
-    def start_engine(self):
-        print(f"{self.make} {self.model} ({self.spec} Spec): Двигун запущено")
+    def start_engine(self) -> None:
+        logger.info(f"{self.make} {self.model} ({self.spec} Spec): Двигун запущено")
+
 
 # Реалізація класу Motorcycle
 class Motorcycle(Vehicle):
-    def start_engine(self):
-        print(f"{self.make} {self.model} ({self.spec} Spec): Мотор заведено")
+    def start_engine(self) -> None:
+        logger.info(f"{self.make} {self.model} ({self.spec} Spec): Мотор заведено")
+
 
 # Абстрактний клас фабрики
 class VehicleFactory(ABC):
     @abstractmethod
-    def create_car(self, make, model):
+    def create_car(self, make: str, model: str) -> Car:
         pass
 
     @abstractmethod
-    def create_motorcycle(self, make, model):
+    def create_motorcycle(self, make: str, model: str) -> Motorcycle:
         pass
+
 
 # Фабрика для транспортних засобів США
 class USVehicleFactory(VehicleFactory):
-    def create_car(self, make, model):
+    def create_car(self, make: str, model: str) -> Car:
         return Car(make, model, "US")
 
-    def create_motorcycle(self, make, model):
+    def create_motorcycle(self, make: str, model: str) -> Motorcycle:
         return Motorcycle(make, model, "US")
+
 
 # Фабрика для транспортних засобів ЄС
 class EUVehicleFactory(VehicleFactory):
-    def create_car(self, make, model):
+    def create_car(self, make: str, model: str) -> Car:
         return Car(make, model, "EU")
 
-    def create_motorcycle(self, make, model):
+    def create_motorcycle(self, make: str, model: str) -> Motorcycle:
         return Motorcycle(make, model, "EU")
 
-# Клієнтський код
-def create_and_start_vehicle(factory: VehicleFactory, vehicle_type: str, make: str, model: str):
+
+def create_and_start_vehicle(
+    factory: VehicleFactory, vehicle_type: str, make: str, model: str
+) -> None:
     if vehicle_type == "car":
-        vehicle = factory.create_car(make, model)
+        vehicle: Union[Car, Motorcycle] = factory.create_car(make, model)
     elif vehicle_type == "motorcycle":
         vehicle = factory.create_motorcycle(make, model)
     else:
         raise ValueError("Невідомий тип транспортного засобу")
     vehicle.start_engine()
 
-# Використання
-print("US Vehicles:")
-us_factory = USVehicleFactory()
-create_and_start_vehicle(us_factory, "car", "Ford", "Mustang")
-create_and_start_vehicle(us_factory, "motorcycle", "Harley-Davidson", "Sportster")
-
-print("\nEU Vehicles:")
-eu_factory = EUVehicleFactory()
-create_and_start_vehicle(eu_factory, "car", "Volkswagen", "Golf")
-create_and_start_vehicle(eu_factory, "motorcycle", "Ducati", "Monster")
-
-
-def create_and_start_vehicle(factory, vehicle_type, make, model):
-    if vehicle_type == "car":
-        vehicle = factory.create_car(make, model)
-    elif vehicle_type == "motorcycle":
-        vehicle = factory.create_motorcycle(make, model)
-    else:
-        raise ValueError("Невідомий тип транспортного засобу")
-    vehicle.start_engine()
 
 if __name__ == "__main__":
-    print("US Vehicles:")
+    logger.info("US Vehicles:")
     us_factory = USVehicleFactory()
     create_and_start_vehicle(us_factory, "car", "Ford", "Mustang")
     create_and_start_vehicle(us_factory, "motorcycle", "Harley-Davidson", "Sportster")
 
-    print("\nEU Vehicles:")
+    logger.info("\nEU Vehicles:")
     eu_factory = EUVehicleFactory()
     create_and_start_vehicle(eu_factory, "car", "Volkswagen", "Golf")
     create_and_start_vehicle(eu_factory, "motorcycle", "Ducati", "Monster")
